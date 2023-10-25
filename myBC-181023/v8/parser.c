@@ -7,6 +7,7 @@
 #include <lexer.h>
 
 int lookahead;
+
 /* LR(1)-grammar for simple expressions - initial symbol: E
  *
  * E -> E + T | E - T | T
@@ -21,47 +22,39 @@ int lookahead;
  * F -> ID | DEC | ( E )
  */
 
-/* E -> T R */
+/* E -> T{['+''-']T} | [['-''+']]T{['+''-']T}*/
 void E(void)
 {
-	T(); R();
-}
+	if (lookahead == '-') {
+		match(lookahead); /**/printf("- ");/**/
+	} else if(lookahead == '+') {
+		match(lookahead); /**/printf("+ ");/**/
+	}
+	
+	T();
 
-/* R -> + T R | - T R | <epsilon> */
-void R(void)
-{
-	switch(lookahead)
+	while(lookahead == '+' || lookahead == '-') 
 	{
-		case '+':
-			match('+'); T(); /**/printf("+ ");/**/ R();
-			break;
-		case '-':
-			match('-'); T(); /**/printf("- ");/**/ R();
-			break;
-		default:
-			;
+		if (lookahead == '+') {
+			match(lookahead); T(); /**/printf("+ ");/**/
+		} else if(lookahead == '-') {
+			match(lookahead); T(); /**/printf("- ");/**/
+		}
+		
 	}
 }
-		
-/* T -> F Q */
+	
+/* T -> F{['*''/']F} */
 void T(void)
-{
-	F(); Q();
-}
-
-/* Q -> * F Q | / F Q | <epsilon> */
-void Q(void)
-{
-	switch(lookahead)
+{ 
+	F();
+	while(lookahead == '*' || lookahead == '/') 
 	{
-		case '*':
-			match('*'); F(); /**/printf("* ");/**/ Q();
-			break;
-		case '/':
-			match('/'); F(); /**/printf("/ ");/**/ Q();
-			break;
-		default:
-			;
+		if (lookahead == '*') {
+			match(lookahead); F(); /**/printf("* ");/**/
+		} else if (lookahead == '/') {
+			match(lookahead); F(); /**/printf("/ ");/**/
+		}
 	}
 }
 
@@ -99,6 +92,9 @@ void match(int expected)
 {
 	if (lookahead == expected) {
 		lookahead = gettoken(src);
+	} else if (lookahead == EOF) {
+		fprintf(stderr, "premature EOF at line %d... exiting with error\n", line_counter);
+		exit(-3);
 	} else {
 		fprintf(stderr, "token mismatch... exiting with error\n");
 		exit(-2);
