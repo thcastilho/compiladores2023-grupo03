@@ -7,7 +7,7 @@
 #include <lexer.h>
 
 int lookahead;
-extern int linecounter;
+int linecounter;
 /* LR(1)-grammar for simple expressions - initial symbol: E
  *
  * E -> E + T | E - T | T
@@ -34,10 +34,10 @@ void R(void)
 	switch(lookahead)
 	{
 		case '+':
-			match('+'); T(); /**/printf(" + ");/**/ R();
+			match('+'); T(); /**/printf("+ ");/**/ R();
 			break;
 		case '-':
-			match('-'); T(); /**/printf(" - ");/**/ R();
+			match('-'); T(); /**/printf("- ");/**/ R();
 			break;
 		default:
 			;
@@ -56,10 +56,10 @@ void Q(void)
 	switch(lookahead)
 	{
 		case '*':
-			match('*'); F(); /**/printf(" * ");/**/ Q();
+			match('*'); F(); /**/printf("* ");/**/ Q();
 			break;
 		case '/':
-			match('/'); F(); /**/printf(" / ");/**/ Q();
+			match('/'); F(); /**/printf("/ ");/**/ Q();
 			break;
 		default:
 			;

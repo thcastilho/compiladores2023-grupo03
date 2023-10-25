@@ -42,7 +42,9 @@ int isID(FILE *tape)
  */
 int isDEC(FILE *tape)
 {
-	int i = strlen(lexeme);
+	//int i = strlen(lexeme);
+
+	int i = 0; //mudei aqui
 
 	lexeme[i] = getc(tape);
 
@@ -58,7 +60,7 @@ int isDEC(FILE *tape)
 		};
 		ungetc(lexeme[i], tape);
 		lexeme[i] = 0;
-		
+
 		return DEC;
 	}
 	ungetc(lexeme[i], tape);
@@ -79,6 +81,7 @@ int isOCT(FILE *tape)
 		lexeme[i] = getc(tape);
 		if (lexeme[i] > '7' || lexeme[i] < '0') {
 			ungetc(lexeme[i], tape);
+			lexeme[i] = 0;
 			i--;
 			ungetc(lexeme[i], tape);
 			lexeme[i] = 0;
@@ -115,6 +118,7 @@ int isHEX(FILE *tape)
 		lexeme[i] = getc(tape);
 		if (toupper(lexeme[i]) != 'X') {
 			ungetc(lexeme[i], tape);
+			lexeme[i] = 0;
 			i--;
 			ungetc(lexeme[i], tape);
 			lexeme[i] = 0;
@@ -125,8 +129,10 @@ int isHEX(FILE *tape)
 		lexeme[i] = getc(tape);
 		if (!isxdigit(lexeme[i])) {
 			ungetc(lexeme[i], tape);
+			lexeme[i] = 0;
 			i--;
 			ungetc(lexeme[i], tape);
+			lexeme[i] = 0;
 			i--;
 			ungetc(lexeme[i], tape);
 			lexeme[i] = 0;
@@ -159,7 +165,7 @@ int isEE(FILE *tape) {
 	lexeme[i] = getc(tape);
 	
 	if (toupper(lexeme[i]) == 'E') {
-		i = 1;
+		i++; //mudei aqui
 		lexeme[i] = getc(tape);
 		
 		if (lexeme[i] == '+' || lexeme[i] == '-') {
@@ -167,11 +173,13 @@ int isEE(FILE *tape) {
 		} else {
 			ungetc(lexeme[i], tape);
 			lexeme[i] = 0;
+			i--; //mudei aqui
 		}
 		
-		i = 2;
+		i++; //mudei aqui
 		lexeme[i] = getc(tape);
 		if (isdigit(lexeme[i])) { // se leu o primeiro e eh digito, entao...
+			i++; //mudei aqui
 			while(isdigit(lexeme[i] = getc(tape))){
 				if (i < MAXIDLEN) {
 					i++;
@@ -179,13 +187,15 @@ int isEE(FILE *tape) {
 			};
 			ungetc(lexeme[i], tape);
 			lexeme[i] = 0;
-			
+
 			return EE;
 		} else { // se o primeiro nao eh digito, devolvo tudo
 			ungetc(lexeme[i], tape);
+			lexeme[i] = 0;
 			if (sign) {
 				i--;
 				ungetc(lexeme[i], tape); //devolve sinal, se houver
+				lexeme[i] = 0;
 			}
 			i--;
 			ungetc(lexeme[i], tape); //devolve 'e' ou 'E'
@@ -208,7 +218,7 @@ int isFLT(FILE *tape) {
 	lexeme[i] = getc(tape);
 	int token; //chamar o isEE
 	
-	if (lexeme[i] == '.') {
+	if (lexeme[i] == '.') { //se encontra o .
 		i = 1;
 		lexeme[i] = getc(tape);
 		if (isdigit(lexeme[i])) {
@@ -218,34 +228,42 @@ int isFLT(FILE *tape) {
 					i++;
 				}
 			};
-			ungetc(lexeme[i], tape); 
-			token = isEE(tape);
+			ungetc(lexeme[i], tape);
+			lexeme[i] = 0;
+			token = isEE(tape); //poderia ser if(isEE(tape) == EE)
 			return FLT;
 		} else {
 			ungetc(lexeme[i], tape);
+			lexeme[i] = 0;
 			i--;
 			ungetc(lexeme[i], tape);
+			lexeme[i] = 0;
 			return 0;
 		}
 	} else {
-		ungetc(lexeme[i], tape);
+		ungetc(lexeme[i], tape); //devolvo o .
+		lexeme[i] = 0;
 		if (isDEC(tape)) {
+			i = strlen(lexeme); //ja leu todos os caracteres la de isDEC 
 			if (isEE(tape)) {
 				return FLT;
 			} else {
-				i++;
+				//i++;
 				lexeme[i] = getc(tape);
 				if (lexeme[i] == '.') {
+					i++; //mudei aqui
 					while(isdigit(lexeme[i] = getc(tape))){
 						if (i < MAXIDLEN) {
 							i++;
 						}	
 					};
-					ungetc(lexeme[i], tape); 
+					ungetc(lexeme[i], tape);
+					lexeme[i] = 0;
 					token = isEE(tape);
 					return FLT;
 				} else {
 					ungetc(lexeme[i], tape);
+					lexeme[i] = 0;
 					return DEC;
 				}
 			}
