@@ -6,6 +6,8 @@
 #include <tokens.h>
 #include <lexer.h>
 
+int line_counter = 1;
+
 /*
  * ID = [A-Za-z][A-Za-z0-9]*
  */
@@ -52,14 +54,14 @@ int isDEC(FILE *tape)
 int isOCT(FILE *tape)
 {
 	int ch = getc(tape);
-	if (ch == '0') {
+	if (ch == '0') { //if starts with 0,
 		ch = getc(tape);
-		if (ch > '7' || ch < '0') {
+		if (ch > '7' || ch < '0') { //check if the next is not between 0 and 7
 			ungetc(ch, tape);
 			ungetc('0', tape);
-			return 0;
+			return 0; //if is not, give back everything to the tape
 		}
-		do {
+		do { //if it is, scan until it is not between 0 and 7
 			ch = getc(tape);
 		} while (ch <= '7' && ch >= '0');
 		ungetc(ch, tape);
@@ -76,23 +78,23 @@ int isHEX(FILE *tape)
 {
 	int x;
 	int ch = getc(tape);
-	if (ch == '0') {
+	if (ch == '0') { //if the head is 0,
 		ch = getc(tape);
-		if (ch == 'x' || ch == 'X') {
+		if (ch == 'x' || ch == 'X') { //the next has to be x or X
 			x = ch;
-		} else {
+		} else { //if it is not, give back everything to the tape
 			ungetc(ch, tape);
 			ungetc('0', tape);
 			return 0;
 		}
 		ch = getc(tape);
-		if (!isxdigit(ch)) {
+		if (!isxdigit(ch)) { //the next character has to be a hex digit
 			ungetc(ch, tape);
 			ungetc(x, tape);
 			ungetc('0', tape);
-			return 0;
+			return 0; //if it is not, give back everything to the tape
 		}
-		do {
+		do { //if it is scan until it is not a hex digit
 			ch = getc(tape);
 		}while(isdigit(ch));
 		ungetc(ch, tape);
@@ -109,22 +111,22 @@ int isEE(FILE *tape) {
 	int sign = 0;
 	int e;
 	int ch = getc(tape);
-	if (toupper(ch) == 'E') {
-		e = ch;
+	if (toupper(ch) == 'E') { //the head has to start with 'e' or 'E'
+		e = ch; //save the character
 		ch = getc(tape);
 		
-		if (ch == '+' || ch == '-') {
+		if (ch == '+' || ch == '-') { //check if a signal come after the 'e' or 'E'
 			sign = ch;
 		} else {
-			ungetc(ch, tape);
+			ungetc(ch, tape); //it is optional, so if it is not a signal, give back the character to the tape
 		}
 		
 		ch = getc(tape);
-		if (isdigit(ch)) { // se leu o primeiro e eh digito, entao...
+		if (isdigit(ch)) { //if the head is a digit, so...
 			while(isdigit(ch = getc(tape)));
 			ungetc(ch, tape);
 			return EE;
-		} else { // se o primeiro nao eh digito, devolvo tudo
+		} else { //if is not, give back everything to the tape
 			ungetc(ch, tape);
 			if (sign) {
 				ungetc(sign, tape);
@@ -144,31 +146,31 @@ int isFLT(FILE *tape) {
 	int ch = getc(tape);
 	int token;
 	
-	if (ch == '.') {
+	if (ch == '.') { //if starts with '.'
 		ch = getc(tape);
-		if (isdigit(ch)) {
-			while(isdigit(ch = getc(tape)));
+		if (isdigit(ch)) { //the next character has to be a digit
+			while(isdigit(ch = getc(tape))); //scan until it is not a digit
 			ungetc(ch, tape); 
-			token = isEE(tape);
+			token = isEE(tape); //check if it follows an exponential notation (optional)
 			return FLT;
 		} else {
-			ungetc(ch, tape);
+			ungetc(ch, tape); //if the next character is not a digit, give back everything to the tape
 			return 0;
 		}
 	} else {
 		ungetc(ch, tape);
-		if (isDEC(tape)) {
-			if (isEE(tape)) {
-				return FLT;
+		if (isDEC(tape)) { //check if it starts with a dec number
+			if (isEE(tape)) { //check if it follows an exponential notation
+				return FLT; //it is already a float number
 			} else {
-				ch = getc(tape);
-				if (ch == '.') {
-					while(isdigit(ch = getc(tape)));
+				ch = getc(tape); //if the exponential notation did not came
+				if (ch == '.') { //check if the next character is '.'
+					while(isdigit(ch = getc(tape))); //scan until it is not a digit
 					ungetc(ch, tape); 
-					token = isEE(tape);
+					token = isEE(tape); //check if it follows an exponential notation (optional)
 					return FLT;
 				} else {
-					ungetc(ch, tape);
+					ungetc(ch, tape); //if this does not follow either a exponential notation or a '.', it is just a dec number 
 					return DEC;
 				}
 			}
@@ -187,7 +189,7 @@ int isNUM (FILE* source) {
 	return 0;
 }
 
-void skipSpacesAndComments(FILE *tape)
+void skipSpacesAndComments(FILE *tape) 
 {
 	int head;
 
@@ -207,7 +209,7 @@ jumpback:
 			}
 			
 		} while (head != '}' && head != EOF);
-		goto jumpback;
+		goto jumpback; //check if after the end of a comment there is new spaces or new comments
 	}
 	
 	ungetc(head, tape);
@@ -219,9 +221,5 @@ int gettoken(FILE *source)
 	skipSpacesAndComments(source);
 	if ( (token = isID(source)) ) return token;
 	if ( (token = isNUM(source)) ) return token;
-	//if ( (token = isOCT(source)) ) return token;
-	//if ( (token = isHEX(source)) ) return token;
-	//if ( (token = isFLT(source)) ) return token;
-	//if ( (token = isDEC(source)) ) return token;
 	return getc(source);
 }

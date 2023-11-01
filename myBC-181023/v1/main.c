@@ -8,10 +8,10 @@ FILE *src;
 
 int main(int argc, char *argv[])
 {
-	if (argc > 1) {
-		src = fopen(argv[1], "r");
+	if (argc > 1) { 
+		src = fopen(argv[1], "r"); //now, the program is able to open extern .txt files
 
-		if (src == NULL) {
+		if (src == NULL) { //error opening the file
 			exit(-1);
 		}
 	} else {

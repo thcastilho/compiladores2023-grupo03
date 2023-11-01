@@ -7,7 +7,6 @@
 #include <lexer.h>
 
 int lookahead;
-int line_counter = 0;
 
 int isOMinus(int check){
 	if (check == '-' || check == '+') {
@@ -31,29 +30,34 @@ int isOTimes(int check){
  *
  * E -> E + T | E - T | T
  * T -> T * F | T / F | F
- * F -> ID | DEC | ( E )
+ * F -> ID | NUM | ( E )
  *
  * LL(1)-grammar for simple expressions - initial symbol: E
  * E -> T R
  * R -> + T R | - T R | <epsilon>
  * T -> F Q
  * Q -> * F Q | / F Q | <epsilon>
- * F -> ID | DEC | ( E )
+ * F -> ID | NUM | ( E )
+ *
+ * EBNF-grammar for simples expressions - initial symbol: E
+ * E -> T{['+''-']T} | [['-''+']]T{['+''-']T}
+ * T -> F{['*''/']F}
+ * F -> ID | NUM | ( E )
  */
 
 /* E -> T{['+''-']T} | [['-''+']]T{['+''-']T}*/
 void E(void)
 {
-	if (isOMinus(lookahead)) 
+	if (isOMinus(lookahead)) //check the ominus optional condition
 	{
 		match(lookahead);
 	}
 _T:
 	T();
-	if(isOPlus(lookahead)) 
+	if(isOPlus(lookahead)) //check the oplus optional condition (note that is a Kleene closure)
 	{
 		match(lookahead);
-		goto _T;
+		goto _T; //return to the beginning of the label
 	}
 }
 	
@@ -62,14 +66,14 @@ void T(void)
 { 
 _F:
 	F();
-	if(isOTimes(lookahead)) 
+	if(isOTimes(lookahead)) //check the otimes optional condition (note that is a Kleene closure)
 	{
 		match(lookahead);
-		goto _F;
+		goto _F; //return to the beginning of the label
 	}
 }
 
-/* F -> ID | DEC | ( E ) */
+/* F -> ID | NUM | ( E ) */
 void F(void)
 {
 	switch(lookahead)
