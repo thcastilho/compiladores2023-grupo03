@@ -17,4 +17,4 @@ O projeto myBC foi composto de várias versões construídas durante as aulas de
 - v10: implementação de operações de pilha no **parser.c** sendo representadas por ações semânticas com *printf()*, com a gramática LL(1) de expressões;
 - v11: implementação de operações de pilha no **parser.c** sendo representadas por ações semânticas com *printf()*, com a gramática EBNF de expressões;
 - v12: implementação de operações de pilha no **parser.c** sendo representadas por ações semânticas com *printf()*, com a gramática EBNF de expressões e diagrama sintático incompleto;
-- v13: versão final do trabalho, com as operações de pilha sendo implementadas por funções reais no **parser.c** e com um loop na **main.c** para que a calculadora continue a calcular até que o usuário saia do programa.
+- v13: versão final do trabalho.
