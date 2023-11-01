@@ -12,14 +12,19 @@ int lookahead;
  *
  * E -> E + T | E - T | T
  * T -> T * F | T / F | F
- * F -> ID | DEC | ( E )
+ * F -> ID | NUM | ( E )
  *
  * LL(1)-grammar for simple expressions - initial symbol: E
  * E -> T R
  * R -> + T R | - T R | <epsilon>
  * T -> F Q
  * Q -> * F Q | / F Q | <epsilon>
- * F -> ID | DEC | ( E )
+ * F -> ID | NUM | ( E )
+ *
+ * EBNF-grammar for simples expressions - initial symbol: E
+ * E -> T{['+''-']T} | [['-''+']]T{['+''-']T}
+ * T -> F{['*''/']F}
+ * F -> ID | NUM | ( E )
  */
 
 /* E -> T{['+''-']T} | [['-''+']]T{['+''-']T}*/
@@ -58,7 +63,7 @@ void T(void)
 	}
 }
 
-/* F -> ID | DEC | ( E ) */
+/* F -> ID | NUM | ( E ) */
 void F(void)
 {
 	switch(lookahead)

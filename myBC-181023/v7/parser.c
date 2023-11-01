@@ -19,6 +19,11 @@ int lookahead;
  * T -> F Q
  * Q -> * F Q | / F Q | <epsilon>
  * F -> ID | DEC | ( E )
+ *
+ * EBNF-grammar for simples expressions - initial symbol: E
+ * E -> T{['+''-']T} | [['-''+']]T{['+''-']T}
+ * T -> F{['*''/']F}
+ * F -> ID | NUM | ( E )
  */
 
 /* E -> T R */
@@ -65,7 +70,7 @@ void Q(void)
 	}
 }
 
-/* F -> ID | DEC | ( E ) */
+/* F -> ID | NUM | ( E ) */
 void F(void)
 {
 	switch(lookahead)

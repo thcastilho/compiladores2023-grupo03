@@ -30,27 +30,32 @@ int isOTimes(int check){
  *
  * E -> E + T | E - T | T
  * T -> T * F | T / F | F
- * F -> ID | DEC | ( E )
+ * F -> ID | NUM | ( E )
  *
  * LL(1)-grammar for simple expressions - initial symbol: E
  * E -> T R
  * R -> + T R | - T R | <epsilon>
  * T -> F Q
  * Q -> * F Q | / F Q | <epsilon>
- * F -> ID | DEC | ( E )
+ * F -> ID | NUM | ( E )
+ *
+ * EBNF-grammar for simples expressions - initial symbol: E
+ * E -> T{['+''-']T} | [['-''+']]T{['+''-']T}
+ * T -> F{['*''/']F}
+ * F -> ID | NUM | ( E )
  */
 
-int minus = 0; //variavel booleana para saber se vem '-' antes 
+int minus = 0; //variable to check if there is a '-' before
 
 /* E -> T{['+''-']T} | [['-''+']]T{['+''-']T}*/
 void E(void)
 {
 
-	int sign = 0; //guarda o sinal de {['+''-']T}
-	if (isOMinus(lookahead)) 
+	int sign = 0; //keep the sign of {['+''-']T}
+	if (isOMinus(lookahead)) //check the ominus optional condition
 	{
 		if (lookahead == '-') {
-			minus = 1; //existe sinal
+			minus = 1; //signed
 		}
 		match(lookahead);
 	}
@@ -72,18 +77,18 @@ _T:
 		/**/
 	}
 
-	if(isOPlus(lookahead)) 
+	if(isOPlus(lookahead)) //check the oplus optional condition (note that is a Kleene closure)
 	{
 		sign = lookahead;
 		match(lookahead);
-		goto _T;
+		goto _T; //return to the beginning of the label
 	}
 }
 	
 /* T -> F{['*''/']F} */
 void T(void)
 { 
-	int sign = 0;
+	int sign = 0; //keep the sign of {['+''-']F}
 _F:
 	F();
 
@@ -102,15 +107,15 @@ _F:
 		/**/
 	}
 
-	if(isOTimes(lookahead)) 
+	if(isOTimes(lookahead)) //check the otimes optional condition (note that is a Kleene closure)
 	{
 		sign = lookahead;
 		match(lookahead);
-		goto _F;
+		goto _F; //return to the beginning of the label
 	}
 }
 
-/* F -> ID | DEC | ( E ) */
+/* F -> ID | NUM | ( E ) */
 void F(void)
 {
 	switch(lookahead)
@@ -139,9 +144,9 @@ void F(void)
 			match('('); E(); match(')');
 	}
 
-	if(minus) { //se ha sinal '-'
+	if(minus) { //if it is signed
 		/**/printf("- ");/**/
-		minus = 0; //isso garante que so vai passar aqui uma vez
+		minus = 0; //guarantees that it will pass here just once
 	}
 }
 
