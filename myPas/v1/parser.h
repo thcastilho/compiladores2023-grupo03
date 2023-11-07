@@ -18,4 +18,10 @@ extern void R(void);
 extern void term(void);
 extern void Q(void);
 extern void factor(void);
+
 extern void match(int);
+
+extern FILE *src;
+
+extern int lookahead;
+extern int gettoken(FILE *);

@@ -6,6 +6,7 @@
 #include <tokens.h>
 #include <lexer.h>
 #include <parser.h>
+#include <keywords.h>
 
 int lookahead;
 
@@ -177,7 +178,9 @@ void stmt(void) {
 			whlstmt();
 			break;
 
-		/* não sei o que fazer com factor() */
+		case ID:
+			factor();
+			break;
 
 		default: ;		
 	}

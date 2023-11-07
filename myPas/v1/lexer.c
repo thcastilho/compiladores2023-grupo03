@@ -29,6 +29,7 @@ int isASGN(FILE *tape)
  */
 int isID(FILE *tape)
 {
+	int kword;
 	int i = 0;
 
 	lexeme[i] = getc(tape);
@@ -43,7 +44,8 @@ int isID(FILE *tape)
 		ungetc(lexeme[i], tape);
 		lexeme[i] = 0;
 		//checking if it is not a keyword
-		/**/
+		if ( (kword = iskeyword(lexeme)) ) return kword; 
+		//if it is not, it is an identifier
 		return ID;
 	}
 	
@@ -86,7 +88,7 @@ int isDEC(FILE *tape)
 /*
  * OCT = 0[0-7]⁺
  */
-/* int isOCT(FILE *tape)
+int isOCT(FILE *tape)
 {
 	int i = 0;
 	lexeme[i] = getc(tape);
@@ -123,7 +125,7 @@ int isDEC(FILE *tape)
 /*
  * HEX = 0[xX][0-9A-Fa-f]⁺  
  */
-/* int isHEX(FILE *tape)
+int isHEX(FILE *tape)
 {
 	int i = 0;
 	lexeme[i] = getc(tape);
@@ -168,7 +170,7 @@ int isDEC(FILE *tape)
 	ungetc(lexeme[i], tape);
 	lexeme[i]= 0;
 	return 0;
-} */
+}
 
 /*
  * EE = [eE]['+''-']?[0-9]⁺
