@@ -1,5 +1,5 @@
 enum {
-    ID = 2024,
+    ID = 1024,
     OCT,
     HEX,
     DEC,
@@ -9,5 +9,4 @@ enum {
     NEQ,
     GEQ,
     LEQ,
-    RELOP
 };

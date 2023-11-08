@@ -1,7 +1,7 @@
 /**@<keywords.h>**/
 
 enum {
-    BEGIN = 1024, 
+    BEGIN = 2048, 
     IN, 
     AND, 
     OR, 
@@ -11,7 +11,8 @@ enum {
     INTEGER, 
     REAL, 
     DOUBLE,
-    BOOLEAN, 
+    BOOLEAN,
+    CHARACTER, 
     STRING, 
     PROGRAM, 
     PROCEDURE, 

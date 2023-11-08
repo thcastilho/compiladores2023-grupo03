@@ -11,6 +11,27 @@ int line_counter = 1;
 
 char lexeme[MAXIDLEN+1];
 
+int isRELOP(FILE *tape) {
+	if ((lexeme[0] = getc(tape)) == '<') {	
+		if ((lexeme[1] = getc(tape)) == '>') {
+			return NEQ;
+		} else if (lexeme[1] == '=') {
+			return LEQ;
+		}
+		ungetc(lexeme[1], tape);
+		lexeme[1] = 0;
+	} else if (lexeme[0] == '>') {
+		if ((lexeme[1] = getc(tape)) == '=') {
+			return GEQ;
+		}
+		ungetc(lexeme[1], tape);
+		lexeme[1] = 0;
+	}
+	ungetc(lexeme[0], tape);
+	lexeme[0] = 0;
+	return 0;
+}
+
 int isASGN(FILE *tape)
 {
 	if ( (lexeme[0] = getc(tape)) == ':' ) { //if starts with ':'
@@ -29,7 +50,7 @@ int isASGN(FILE *tape)
  */
 int isID(FILE *tape)
 {
-	int kword;
+	int kword = 0;
 	int i = 0;
 
 	lexeme[i] = getc(tape);
@@ -297,7 +318,6 @@ jumpback:
 	while(isspace(head = getc(tape))){
 		if (head == '\n') {
 			line_counter++;
-			break; //necessary to keep the program in a loop
 		}
 	};
 	
@@ -331,6 +351,7 @@ int gettoken(FILE *source)
 	if ( (token = isID(source)) ) return token;
 	if ( (token = isNUM(source)) ) return token;
 	if ( (token = isASGN(source)) ) return token;
+	if ( (token = isRELOP(source)) ) return token;
 	
 	return getc(source);
 }

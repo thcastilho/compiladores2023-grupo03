@@ -63,13 +63,10 @@ void mypas(void) {
 
 /* idlist -> ID { ',' ID } */
 void idlist(void) {
-	if(lookahead == ID) {
+	match(ID);
+	while(lookahead == ',') {
+		match(','); 
 		match(ID);
-
-		while(lookahead == ID || lookahead == ',') {
-			match(',');
-			match(ID);
-		}
 	}
 }
 
@@ -81,10 +78,11 @@ void block(void){
 
 /* header -> vardecl sbpdecl | <empty> */
 void header(void) {
-	vardec1(); 
-	sbpdec1();
+	vardecl(); 
+	sbpdecl();
 }
 
+/* type -> INTEGER | REAL | DOUBLE | BOOLEAN | CHARACTER | STRING*/
 void type(void) {
 	switch(lookahead) {
 		case INTEGER:
@@ -103,6 +101,10 @@ void type(void) {
 			match(BOOLEAN);
 			break;
 
+		case CHARACTER:
+			match(CHARACTER);
+			break;
+
 		case STRING:
 			match(STRING);
 			break;
@@ -112,23 +114,31 @@ void type(void) {
 }
 
 /* vardecl -> VAR idlist ':' type ';' { idlist ':' type ';' } | <empty> */
-void vardec1(void) {
-	match(VAR);
-	
-	_vardeclarations:
-	idlist();
-	match(':');
-	type();
-	match(';');
-	if(lookahead == ID) goto _vardeclarations;
+void vardecl(void) {
+	if(lookahead == VAR) {
+		match(VAR);
+
+_vardeclarations:
+		idlist();
+		match(':');
+		type();
+		match(';');
+		if(lookahead == ID) {
+			goto _vardeclarations;
+		}
+	} else {
+		;
+	}
 }
 
 /*
- * sbpdecl -> PROCEDURE ID parmlist ';' block ';'
+ * sbpdecl -> { PROCEDURE ID parmlist ';' block ';'
  *          | FUNCTION  ID parmlist ':' type ';' block ';'
- *          | <empty>
+ *          }
  */
-void sbpdec1(void) {
+void sbpdecl(void) {
+
+_sbpdecl:
 	switch(lookahead) {
 		case PROCEDURE:
 			match(PROCEDURE);
@@ -152,23 +162,35 @@ void sbpdec1(void) {
 
 		default: ;
 	}
-}
 
-/* parmlist -> '(' [ VAR ] idlist { ';' [ VAR ] idlist } ')' | <empty> */
-void parmlist(void) {
-	match('(');
-	
-	_parameterlist:
-	if(lookahead == VAR) match(VAR);
-	
-	idlist();
-	
-	if(lookahead == ';') {
-		match(';');
-		goto _parameterlist;
+	if(lookahead == PROCEDURE || lookahead == FUNCTION) {
+		goto _sbpdecl;
 	}
 
-	match(')');
+}
+
+/* parmlist -> '(' [ VAR ] idlist : type { ';' [ VAR ] idlist : type} ')' | <empty> */
+void parmlist(void) {
+	if(lookahead == '(') {
+		match('(');
+		
+	_parameterlist:
+		if(lookahead == VAR) match(VAR);
+		
+		idlist();
+		match(':');
+		type();
+		
+		if(lookahead == ';') {
+			match(';');
+			goto _parameterlist;
+		}
+
+		match(')');
+	} else {
+		;
+	}
+
 }
 
 /* beginstmt -> BEGIN stmtlist END */
@@ -182,7 +204,7 @@ void beginstmt(void) {
 void stmtlist(void) {
 	stmt();
 	while(lookahead == ';') {
-		match(';');
+		match(';'); 
 		stmt();
 	}
 }
@@ -211,6 +233,21 @@ void stmt(void) {
 			break;
 
 		default: ;		
+	}
+}
+
+void expr(void){
+	smpexpr();
+	switch(lookahead) {
+		case '=':
+		case '<':
+		case '>':
+		case LEQ:
+		case GEQ:
+		case NEQ:
+			match(lookahead);
+			smpexpr();
+		default: ;
 	}
 }
 
@@ -274,20 +311,48 @@ void Q(void)
 	}
 }
 
+void exprlist(void) {
+
+_expr:
+	expr();
+
+	if(lookahead == ',') {
+		match(',');
+		goto _expr;
+	}
+}
+
 void factor(void)
 {
-	if (lookahead == ID) {
-		match(ID);
-		if (lookahead == ASGN) {
-			// L-Value
-			match(ASGN); smpexpr();
-		} else {
-			// R-Value
-		}
-	} else if (lookahead == DEC) {
-		match(DEC);
-	} else {
-		match('('); smpexpr(); match(')');
+	switch(lookahead) {
+		case ID:
+			match(ID);
+			if(lookahead == '(') {
+				match('(');
+				exprlist();
+				match(')');
+			}
+			if (lookahead == ASGN) {
+				// L-Value
+				match(ASGN); smpexpr();
+			} else {
+				; // R-Value
+			}
+			break;
+		case DEC:
+			match(DEC);
+			break;
+		case OCT:
+			match(OCT);
+			break;
+		case HEX:
+			match(HEX);
+			break;
+		case FLT:
+			match(FLT);
+			break;
+		default:
+			match('('); smpexpr(); match(')');		
 	}
 }
 
@@ -296,7 +361,7 @@ void match(int expected)
 	if (lookahead == expected) {
 		lookahead = gettoken(src);
 	} else {
-		fprintf(stderr, "token mismatch... exiting with error\n");
+		fprintf(stderr, "token mismatch at line %d... exiting with error\n", line_counter);
 		exit(-2);
 	}
 }

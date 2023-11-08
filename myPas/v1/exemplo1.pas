@@ -14,7 +14,7 @@ program exemplo1 (input, output);
 		end;
 
 	begin
-		if x > 3 then
+		if x >= 3 then
 			begin
 				goiaba := 3;
 				x := 4

@@ -15,6 +15,7 @@ char *keywords[] = {
     "real", 
     "double", 
     "boolean", 
+    "character",
     "string", 
     "program", 
     "procedure", 
