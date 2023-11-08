@@ -85,6 +85,32 @@ void header(void) {
 	sbpdec1();
 }
 
+void type(void) {
+	switch(lookahead) {
+		case INTEGER:
+			match(INTEGER);
+			break;
+
+		case REAL:
+			match(REAL);
+			break;
+
+		case DOUBLE:
+			match(DOUBLE);
+			break;
+
+		case BOOLEAN:
+			match(BOOLEAN);
+			break;
+
+		case STRING:
+			match(STRING);
+			break;
+
+		default: ;
+	}
+}
+
 /* vardecl -> VAR idlist ':' type ';' { idlist ':' type ';' } | <empty> */
 void vardec1(void) {
 	match(VAR);
@@ -123,6 +149,8 @@ void sbpdec1(void) {
 			block();
 			match(';');
 			break;
+
+		default: ;
 	}
 }
 
