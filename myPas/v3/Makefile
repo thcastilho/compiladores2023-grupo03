@@ -2,9 +2,9 @@
 
 CFLAGS = -I. -g
 
-#$(CC) -o mybc main.o lexer.o parser.o
+#$(CC) -o mypas main.o lexer.o parser.o keywords.o symtab.o
 
-mypas: main.o lexer.o parser.o keywords.o
+mypas: main.o lexer.o parser.o keywords.o symtab.o
 	$(CC) -o $@ $^
 
 clean:

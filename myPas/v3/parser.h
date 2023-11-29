@@ -29,6 +29,3 @@ extern FILE *src;
 extern int lookahead;
 extern int gettoken(FILE *);
 
-extern int symtab_next_entry;
-extern int symtab_lookup(char *query);
-extern int symtab_append(char *name);

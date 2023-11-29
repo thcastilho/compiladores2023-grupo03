@@ -5,13 +5,12 @@
 #include <string.h>
 #include <tokens.h>
 #include <lexer.h>
+#include <symtab.h>
 #include <parser.h>
 #include <keywords.h>
-#include <symtab.h>
 
 int lookahead;
 int error_count = 0;
- /**/int lex_level = 1;/**/
 /*****************************************************************************************************
  * non-terminals: {mypas, idlist, block, ...}
  * initial symbol: mypas
@@ -53,7 +52,13 @@ int error_count = 0;
 
 /* mypas -> PROGRAM ID '(' idlist ')' ';' block '.' */
 void mypas(void) {
-	match(PROGRAM); 
+	match(PROGRAM);
+	symtab_append(lexeme);
+
+	//register the program in the symbol table
+	symtab[1].objtype = 3;
+	symtab[1].type = 0; 
+
 	match(ID); 
 	match('('); 
 	idlist(); 
@@ -65,12 +70,27 @@ void mypas(void) {
 
 /* idlist -> ID { ',' ID } */
 void idlist(void) {
-	/*se symtab_append der -2, simbolo duplicado*/
-	//trocar pra goto. usar aqui, no vardecl, no sbpdecl, no parmlist
+	/**/int obj_pos = symtab_next_entry;/**/
+
+	_idlist:
+	
+	//if it's true, the symbol is already on the table
+	if(symtab_append(lexeme)) {
+		fprintf(stderr, "%s already defined error\n", lexeme);
+		obj_pos = -1;
+		error_count++;
+	}
+
+	//if it's not on the table, register the type
+	if(obj_pos > -1) {
+		symtab[obj_pos].objtype = 0;
+	}
+
 	match(ID);
-	while(lookahead == ',') {
-		match(','); 
-		match(ID);
+	if(lookahead == ',') {
+		match(',');
+		/**/obj_pos = symtab_next_entry/**/;
+		goto _idlist;
 	}
 }
 
@@ -88,34 +108,42 @@ void header(void) {
 
 /* type -> INTEGER | REAL | DOUBLE | BOOLEAN | CHARACTER | STRING*/
 int type(void) {
+	/**/int obj_type = -1;/**/
+
 	switch(lookahead) {
 		case INTEGER:
 			match(INTEGER);
+			obj_type = 1;
 			break;
 
 		case REAL:
 			match(REAL);
+			obj_type = 2;
 			break;
 
 		case DOUBLE:
 			match(DOUBLE);
+			obj_type = 3;
 			break;
 
 		case BOOLEAN:
 			match(BOOLEAN);
+			obj_type = 4;
 			break;
 
 		case CHARACTER:
 			match(CHARACTER);
+			obj_type = 5;
 			break;
 
 		case STRING:
 			match(STRING);
+			obj_type = 6;
 			break;
 
 		default: ;
 	}
-	return lookahead;
+	return obj_type;
 }
 
 /* vardecl -> VAR idlist ':' type ';' { idlist ':' type ';' } | <empty> */
@@ -132,9 +160,8 @@ _vardeclarations:
 		/**/symtype = /**/ type();
 		/**/
 		for(int i = init_pos; i < symtab_next_entry; i++) {
+			//register the type for all the parsed symbols 
 			symtab[i].type = symtype;
-			strcpy(symtab[i].name, lexeme);
-			symtab[i].objtype = 0;
 		}
 		/**/
 		match(';');
@@ -162,11 +189,13 @@ _sbpdecl:
 	if(isFunc || lookahead == PROCEDURE) {
 		match(lookahead);
 		/**/
+		//if it's true, the symbol is already on the table
 		if(symtab_append(lexeme)) {
 			fprintf(stderr, "%s already defined error\n", lexeme);
 			obj_pos = -1;
 			error_count++;
 		}
+		//if it's not on the table, register the type (function or procedure)
 		if(obj_pos > -1 && isFunc) {
 			symtab[obj_pos].objtype = 1;
 		} else if(obj_pos > -1) {
@@ -175,15 +204,20 @@ _sbpdecl:
 		/**/
 		match(ID);
 		parmlist();
+
 		if(isFunc) {
 				match(':');
-				type();
+				/**/ret_type = /**/ type(); //takes the function's return type
+				symtab[obj_pos].type = ret_type;
 		}
+
 		match(';');
 		block();
 		match(';');
 	}
 	if(lookahead == PROCEDURE || lookahead == FUNCTION) {
+		/**/obj_pos = symtab_next_entry;/**/
+		isFunc = (lookahead == FUNCTION);
 		goto _sbpdecl;
 	}
 }
@@ -193,15 +227,27 @@ void parmlist(void) {
 	if(lookahead == '(') {
 		match('(');
 		
+	/**/int obj_type;/**/
+	/**/int init_pos = symtab_next_entry;/**/
 	_parameterlist:
 		if(lookahead == VAR) match(VAR);
 		
+
 		idlist();
 		match(':');
-		type();
+
+		/**/obj_type/**/ = type();
 		
+		/**/
+		for(int i = init_pos; i < symtab_next_entry; i++) {
+			//register the type for all the parsed symbols 
+			symtab[i].type = obj_type;
+		}
+		/**/
+
 		if(lookahead == ';') {
 			match(';');
+		/**/init_pos = symtab_next_entry;/**/
 			goto _parameterlist;
 		}
 
@@ -359,7 +405,7 @@ void factor(void)
 			if(lookahead == '(') {
 				//R-Value
 				/**/
-				if(symtab[var_pos].objtype >=1) {
+				if(symtab[var_pos].objtype == 0 || symtab[var_pos].objtype == 3) {
 					fprintf(stderr, "%s must be a function or procedure error\n", var_name);
 					error_count++;
 				}
@@ -393,29 +439,21 @@ void factor(void)
 
 void match(int expected)
 {
-        if (lookahead == expected) {
-                lookahead = gettoken(src);
-        } else {
-                if (expected >= 33 && expected <= 126)
-                {
-                        fprintf(stderr, "token mismatch...expected: %c ", expected);
-                }
-                else if (expected >= 10)
-                {
-                        fprintf(stderr, "token mismatch...expected: %d ", expected);
-                }
+	if(lookahead != expected) {
+		if(expected >= 33 && expected <= 126) { //the range is for special and normal characters
+			fprintf(stderr, "token mismatch, expected %c\n", expected);
+		} else if(expected >= 10) { //line feed
+			fprintf(stderr, "token mismatch, expected %d\n", expected);
+		}
 
-                if (lookahead >= 33 && lookahead <= 126)
-                {
-                        fprintf(stderr, "in has: %c ", lookahead);
-                }
-                else if (lookahead >= 10)
-                {
+		if(lookahead >= 33 && lookahead <= 126) { //the range is for special and normal characters
+			fprintf(stderr, "got %c, which is what will be used\n", lookahead);
+		} else if(lookahead >= 10) { //line feed
+			fprintf(stderr, "got %d, which is what will be used\n", lookahead);
+		}
 
-                        fprintf(stderr, "in has: %d ", lookahead);
-                        
-                }
-                fprintf(stderr,"in line: %d\n",line_counter);
-                exit(-2);
-        }
+		if(lookahead == '\n') return; //this allow us to continue the parsing; if we remove it, then the program will wait for a new input to show the result
+	}
+
+	lookahead = gettoken(src);
 }

@@ -5,7 +5,7 @@
 
 struct _symtab_ symtab[MAXSYMTABSIZE];
 
-int symtab_next_entry;
+int symtab_next_entry = 1;
 
 int symtab_lookup(char *query) {
     int i;
@@ -19,7 +19,7 @@ int symtab_lookup(char *query) {
 
 int symtab_append(char *name) {
     if (symtab_lookup(name) < 0) { //the symbol is not in the table
-        strcpy([symtab_next_entry].name, name);
+        strcpy(symtab[symtab_next_entry].name, name);
         symtab_next_entry++;
         return 0; //success
     }
