@@ -18,3 +18,15 @@ O projeto myBC foi composto de várias versões construídas durante as aulas de
 - v11: implementação de operações de pilha no **parser.c** sendo representadas por ações semânticas com *printf()*, com a gramática EBNF de expressões;
 - v12: implementação de operações de pilha no **parser.c** sendo representadas por ações semânticas com *printf()*, com a gramática EBNF de expressões e diagrama sintático incompleto;
 - v13: versão final do trabalho.
+
+# myPas - my Pascal
+## 2º Trabalho da Disciplina de Compiladores, 6º semestre do curso de Ciências da Computação da Unesp de Rio Claro
+## Grupo: João Mantilha, Pedro Bruce e Thiago César
+
+### Versões
+O projeto myPas foi composto de várias versões construídas durante as aulas de laboratório.
+- v1: versão inicial do projeto com as regras de produções que serão trabalhadas; o **lexer.c** do *myBC* foi reaproveitado;
+- v2: versão apenas com o **parser.c**, **symtab.c** e **symtab.h**, a pedidos do docente;
+- v3: versão com a implementação inicial do cadastro de nomes na tabela de simbolos;
+- v4: versão com a implementação inicial dos conceitos de nível léxico;
+- v5: correções das implementações anteriores (cadastro de nomes na tabela de símbolos e níveis léxicos) e implementação inicial da verificação de tipos.
