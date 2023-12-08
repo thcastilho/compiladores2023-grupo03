@@ -362,29 +362,10 @@ void factor(void)
 
 void match(int expected)
 {
-        if (lookahead == expected) {
-                lookahead = gettoken(src);
-        } else {
-                if (expected >= 33 && expected <= 126)
-                {
-                        fprintf(stderr, "token mismatch...expected: %c ", expected);
-                }
-                else if (expected >= 10)
-                {
-                        fprintf(stderr, "token mismatch...expected: %d ", expected);
-                }
-
-                if (lookahead >= 33 && lookahead <= 126)
-                {
-                        fprintf(stderr, "in has: %c ", lookahead);
-                }
-                else if (lookahead >= 10)
-                {
-
-                        fprintf(stderr, "in has: %d ", lookahead);
-                        
-                }
-                fprintf(stderr,"in line: %d\n",line_counter);
-                exit(-2);
-        }
+	if (lookahead == expected) {
+		lookahead = gettoken(src);
+	} else {
+		fprintf(stderr, "token mismatch at line %d... exiting with error\n", line_counter);
+		exit(-2);
+	}
 }

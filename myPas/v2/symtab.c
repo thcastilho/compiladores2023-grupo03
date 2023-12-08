@@ -5,7 +5,7 @@
 
 struct _symtab_ symtab[MAXSYMTABSIZE];
 
-int symtab_next_entry;
+int symtab_next_entry = 1;
 
 int symtab_lookup(char *query) {
     int i;
